@@ -96,5 +96,5 @@ def msgHandler(event, context):
             'statusCode': statusCode
     }
 
-msgHandler("""{"device_id":"areb120kpg2j1kqiq23d","datetime":"05/07/2020 13:09:47","latitude":"55.70329032","longitude":"37.65472196","altitude":"429.13","speed":"0","battery_voltage":"23.5","cabin_temperature":"17","fuel_level":null}""", None)
+#msgHandler("""{"device_id":"areb120kpg2j1kqiq23d","datetime":"05/07/2020 13:09:47","latitude":"55.70329032","longitude":"37.65472196","altitude":"429.13","speed":"0","battery_voltage":"23.5","cabin_temperature":"17","fuel_level":null}""", None)
     
