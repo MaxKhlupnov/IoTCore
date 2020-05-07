@@ -1,0 +1,23 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Yandex Cloud Function: IoT protocol adapter",
+            "type": "python",
+            "request": "launch",
+            "program": "iotadapter.py",
+            "console": "integratedTerminal",
+            "env": {
+                "VERBOSE_LOG": "Talse",
+                "DB_HOSTNAME": "my-host-name",
+                "DB_PORT": "6432",
+                "DB_NAME": "my-postgre-db-name",
+                "DB_USER": "my-user-name",
+                "DB_PASSWORD": "my-password"
+            }
+        }
+    ]
+}
