@@ -75,24 +75,34 @@ def makeCreateTableStatement(table_name):
 """
 def msgHandler(event, context):
     statusCode = 500 ## Error response by default
-    logger.info(event)
-    logger.info(context)
+    if  verboseLogging:
+        logger.info(event)
+        logger.info(context)
 
     connection_string = getConnString()
+    
     if  verboseLogging:
         logger.info(f'Connecting: {connection_string}')
+
     conn = psycopg2.connect(connection_string)
 
     cursor = conn.cursor()
-    json_msg = json.loads(event)
-    payload = base64.b64decode(json_msg["messages"][0]["details"]["payload"])
-    event_id = json_msg["messages"][0]["event_metadata"]["event_id"]
-    enqueue_time = json_msg["messages"][0]["event_metadata"]["created_at"]
+    msg_payload = json.dumps(event["messages"][0])
+    json_msg = json.loads(msg_payload)
+    event_payload = base64.b64decode(json_msg["details"]["payload"])
+
+    if  verboseLogging:     
+        logger.info(f'Event: {event_payload}')
+
+    event_id = json_msg["event_metadata"]["event_id"]
+    enqueue_time = json_msg["event_metadata"]["created_at"]
 
     table_name = 'iot_events'
-    sql = makeInsertStatement(event_id, enqueue_time, payload, table_name) ## let's name table 'iot_events'
+    sql = makeInsertStatement(event_id, enqueue_time, event_payload, table_name) ## let's name table 'iot_events'
+
     if  verboseLogging:     
         logger.info(f'Exec: {sql}')
+
     try:
         cursor.execute(sql)
         statusCode = 200
