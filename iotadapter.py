@@ -4,6 +4,7 @@ import psycopg2
 import psycopg2.errors
 import datetime as dt
 import json
+import base64
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -26,24 +27,36 @@ def getConnString():
     db_password = os.environ['DB_PASSWORD']
     db_connection_string = f"host='{db_hostname}' port='{db_port}'  dbname='{db_name}' user='{db_user}' password='{db_password}'  sslmode='require'"
     return db_connection_string
- 
-def makeInsertStatement(event_json, table_name):
 
-    event = json.loads(event_json)
+def num(s):  
+    try:
+        s.replace(',','.')
+        return  "{:10.4f}".format(float(s))
+    except (AttributeError, ValueError):
+        return "NULL"
+
+def makeInsertStatement(event_id, enqueue_datetime, payload_json, table_name):
+
+    event = json.loads(payload_json)
 
    # event_datetime = dt.datetime.strftime(event['datetime'])
-    insert=  f"""INSERT INTO {table_name} (device_id, event_datetime, latitude, longitude, altitude, 
-                    speed, battery_voltage, cabin_temperature, fuel_level) 
-                 VALUES('{event['device_id']}', '{event['datetime']}', {event['latitude']}, {event['longitude']}, {event['altitude']}, 
-                 {event['speed']}, {event['battery_voltage']},{event['cabin_temperature']},{event['fuel_level']})""".replace('None','NULL')
+    insert=  f"""INSERT INTO {table_name} (event_id, device_id, enqueue_datetime, event_datetime, processed_datetime, 
+                 latitude, longitude, altitude, speed, battery_voltage, cabin_temperature, fuel_level) 
+                 VALUES('{event_id}','{event['device_id']}', '{enqueue_datetime}','{event['datetime']}', CURRENT_TIMESTAMP,
+                 {event['latitude']}, {event['longitude']}, {event['altitude']}, 
+                 {num(event['speed'])}, {num(event['battery_voltage'])},
+                 {num(event['cabin_temperature'])},{num(event['fuel_level'])})"""
 
     return insert
 
 def makeCreateTableStatement(table_name):
 
     statement = f"""CREATE TABLE public.{table_name} (
+    event_id varchar(24) not null,
 	device_id varchar(50) not null,
+    enqueue_datetime timestamptz not null,
 	event_datetime timestamptz not null,
+    processed_datetime  timestamptz not null,
 	latitude float8 null,
 	longitude float8 null,
 	altitude float8 null,
@@ -71,8 +84,13 @@ def msgHandler(event, context):
     conn = psycopg2.connect(connection_string)
 
     cursor = conn.cursor()
+    json_msg = json.loads(event)
+    payload = base64.b64decode(json_msg["messages"][0]["details"]["payload"])
+    event_id = json_msg["messages"][0]["event_metadata"]["event_id"]
+    enqueue_time = json_msg["messages"][0]["event_metadata"]["created_at"]
+
     table_name = 'iot_events'
-    sql = makeInsertStatement(event, table_name) ## let's name table 'iot_events'
+    sql = makeInsertStatement(event_id, enqueue_time, payload, table_name) ## let's name table 'iot_events'
     if  verboseLogging:     
         logger.info(f'Exec: {sql}')
     try:
@@ -101,6 +119,25 @@ def msgHandler(event, context):
         },
         'isBase64Encoded': False
     }
-
-#msgHandler("""{"device_id":"areb120kpg2j1kqiq23d","datetime":"05/07/2020 13:09:47","latitude":"55.70329032","longitude":"37.65472196","altitude":"429.13","speed":"0","battery_voltage":"23.5","cabin_temperature":"17","fuel_level":null}""", None)
+''''
+#### PAYLOAD EXAMPLE FOR LOCAL DEBUGGING ### 
+msgHandler("""{
+	"messages": [
+		{
+			"event_metadata": {
+				"event_id": "160d239876d9714800",
+				"event_type": "yandex.cloud.events.iot.IoTMessage",
+				"created_at": "2020-05-08T19:16:21.267616072Z",
+				"folder_id": "b1gvp43cei68d5sfhsu7"
+			},
+			"details": {
+				"registry_id": "areba24s6jn8lrc0d5pa",
+				"device_id": "areb120kpg2j1kqiq23d",
+				"mqtt_topic": "$devices/areb120kpg2j1kqiq23d/events",
+				"payload": "eyJkZXZpY2VfaWQiOiJhcmViMTIwa3BnMmoxa3FpcTIzZCIsImRhdGV0aW1lIjoiMDUvMDgvMjAyMCAyMjoxNjoyMSIsImxhdGl0dWRlIjoiNTUuNzAzMjkwMzIiLCJsb25naXR1ZGUiOiIzNy42NTQ3MjE5NiIsImFsdGl0dWRlIjoiNDI5LjEzIiwic3BlZWQiOiIwIiwiYmF0dGVyeV92b2x0YWdlIjoiMjMsNSIsImNhYmluX3RlbXBlcmF0dXJlIjoiMTciLCJmdWVsX2xldmVsIjpudWxsfQ=="
+			}
+		}
+	]
+}""", None)
+'''
     
