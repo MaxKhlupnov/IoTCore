@@ -61,7 +61,7 @@ def makeCreateTableStatement(table_name):
     :return: sucessfull response statusCode: 200
 """
 def msgHandler(event, context):
- 
+    statusCode = 500 ## Error response by default
     logger.info(event)
     logger.info(context)
 
@@ -77,6 +77,7 @@ def msgHandler(event, context):
         logger.info(f'Exec: {sql}')
     try:
         cursor.execute(sql)
+        statusCode = 200
     except psycopg2.errors.UndefinedTable as error: ## table not exist - create and repeate insert
         conn.rollback()
         logger.error( error)        
@@ -84,16 +85,21 @@ def msgHandler(event, context):
         cursor.execute(createTable)
         conn.commit()
         cursor.execute(sql)
+        statusCode = 200
     except Exception as error:
         logger.error( error)
     conn.commit() # <- We MUST commit to reflect the inserted data
     cursor.close()
     conn.close()
 
-    statusCode = 200
+    
 
     return {
-            'statusCode': statusCode
+        'statusCode': statusCode,
+        'headers': {
+            'Content-Type': 'text/plain'
+        },
+        'isBase64Encoded': False
     }
 
 #msgHandler("""{"device_id":"areb120kpg2j1kqiq23d","datetime":"05/07/2020 13:09:47","latitude":"55.70329032","longitude":"37.65472196","altitude":"429.13","speed":"0","battery_voltage":"23.5","cabin_temperature":"17","fuel_level":null}""", None)
