@@ -12,8 +12,8 @@ resource "yandex_iam_service_account" "sa" {
   description = "service account to work with IoT functoions"
 }
 
-resource "yandex_iam_service_account_iam_member" "admin-account-iam" {
-  service_account_id = "${yandex_iam_service_account.sa.id}"
+resource "yandex_resourcemanager_folder_iam_member" "invoker-svc-iam" {
+  folder_id          = var.yc_folder_id
   role               = "serverless.functions.invoker"
   member             = "serviceAccount:${yandex_iam_service_account.sa.id}"
 }
@@ -131,6 +131,7 @@ resource "yandex_function" "iotadapter" {
     DB_NAME      = var.iot_db_name
     VERBOSE_LOG  = "True"
   }
+  depends_on     = [yandex_resourcemanager_folder_iam_member.invoker-svc-iam]
 }
 
 resource "yandex_function_trigger" "iot_device_01" {
