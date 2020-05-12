@@ -133,6 +133,27 @@ resource "yandex_function" "iotadapter" {
   }
 }
 
+resource "yandex_function_trigger" "iot_device_01" {
+  name        = "dev-${yandex_iot_core_device.iot_device_01_name.id}-trigger"
+  description = "trigger for incomming iot messages for iot_device_01"
+  iot  {
+      registry_id = "${yandex_iot_core_registry.iot_registry_name.id}"
+      device_id = "${yandex_iot_core_device.iot_device_01_name.id}"
+      topic = "$devices/${yandex_iot_core_device.iot_device_01_name.id}/events"
+  }
+  function  {
+    id = "${yandex_function.iotadapter.id}"
+    service_account_id = "${yandex_iam_service_account.sa.id}"
+  }
+}
+
+output "yandex_iot_core_registry_iot_registry_passwords" {
+  value = "${yandex_iot_core_registry.iot_registry_name.passwords}"
+}
+
+output "yandex_iot_core_device_iot_device_01_passwords" {
+  value = "${yandex_iot_core_device.iot_device_01_name.passwords}"
+}
 
 output "managed_pgsql_iot_testing_cluster_id" {
   value = module.managed_pgsql_iot_testing.cluster_id
