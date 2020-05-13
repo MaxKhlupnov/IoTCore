@@ -47,3 +47,4 @@
 </ol>
 <h2>Дополнительная информация:<h2>
   <p><a href='https://github.com/yandex-cloud/examples/tree/master/iot/terraform/emulator_publish'>Пример использования терраформа для деплоя и эмуляции записи от N устойств</a></p>
+  <p><a href='https://github.com/asalimonov/yc-mdb-terraform-examples'>Yandex.Cloud MDB Terraform modules and examples</a></p>
