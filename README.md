@@ -1,2 +1,2 @@
 # IoTCore
-Yandex IoT cure serverless function example 
+Yandex IoT core serverless function example with Terraform deployment
