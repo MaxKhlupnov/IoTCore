@@ -7,4 +7,5 @@
   <div>- IoT Core реестр с IoT устройством</div>
   <div>- Cloud function и триггеры для сохранения сообщений из сервиса IoT Core в PostgreDatabase</div>
 </li> 
+  <li>Консольного <a href=https://github.com/MaxKhlupnov/IoTSimulator>приложения IoTSimulator</a>, которое эммулирует работу IoT устройства и предает данные в сервис IoT Core</li>
 </ol>
