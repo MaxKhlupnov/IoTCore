@@ -30,7 +30,7 @@ def getConnString():
 
 def num(s):  
     try:
-        s.replace(',','.')
+        s = s.replace(",",".")
         return  "{:10.4f}".format(float(s))
     except (AttributeError, ValueError):
         return "NULL"
